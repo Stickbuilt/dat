@@ -53,6 +53,10 @@ func (store *MemoryKeyValueStore) Del(key string) error {
 	return nil
 }
 
+func (store *MemoryKeyValueStore) DelWildcard(wildcard string) error {
+     return store.Del(wildcard)
+}
+
 // FlushDB clears all keys
 func (store *MemoryKeyValueStore) FlushDB() error {
 	store.Cache = gocache.New(gocache.NoExpiration, store.cleanupInterval)

@@ -1,6 +1,7 @@
 package kvs
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -93,6 +94,25 @@ func (rs *RedisStore) Del(key string) error {
 	key = rs.ns + key
 	_, err := conn.Do("DEL", key)
 	return err
+}
+
+func (rs *RedisStore) DelWildcard(keyWildcard string) error {
+	conn := rs.pool.Get()
+	defer conn.Close()
+	keyWildcard = rs.ns + keyWildcard
+	if keys, err := redis.Strings(conn.Do("KEYS", keyWildcard)); err == redis.ErrNil {
+		return ErrNotFound
+	} else if err != nil {
+		fmt.Println(err)
+		return err
+	} else {
+		for _, k := range keys {
+			if _, err := conn.Do("DEL", k); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 }
 
 // FlushDB removes all keys.
